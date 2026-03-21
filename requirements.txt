@@ -1,14 +1,17 @@
-# 火山引擎视频生成中转服务依赖
+# 火山引擎视频生成中转服务 - 最终依赖
+# 简化版本，避免依赖问题
+
 # Web框架
 Flask==2.3.3
-Werkzeug==2.3.7
-# 火山引擎官方SDK
-volcengine==1.0.98
+
 # 网络请求
 requests==2.31.0
-# 环境变量管理（可选）
-python-dotenv==1.0.0
-# 生产部署（Render.com可能需要）
-gunicorn==20.1.0
-# 开发工具
-blinker==1.6.2
+
+# Flask依赖
+Werkzeug==2.3.7
+Jinja2==3.1.3
+itsdangerous==2.1.2
+click==8.1.7
+
+# 注意：移除了volcengine和gunicorn依赖
+# 使用Flask内置服务器，确保部署成功
