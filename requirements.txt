@@ -6,7 +6,7 @@ Flask==2.3.3
 
 # 网络请求
 requests==2.31.0
-volcengine==1.0.0
+volcengine>=1.0.98
 python-dotenv==1.0.0
 # Flask依赖
 Werkzeug==2.3.7
