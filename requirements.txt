@@ -1,3 +1,14 @@
-﻿flask==3.0.0
-gunicorn==21.2.0
+# 火山引擎视频生成中转服务依赖
+# Web框架
+Flask==2.3.3
+Werkzeug==2.3.7
+# 火山引擎官方SDK
+volcengine==1.0.98
+# 网络请求
 requests==2.31.0
+# 环境变量管理（可选）
+python-dotenv==1.0.0
+# 生产部署（Render.com可能需要）
+gunicorn==20.1.0
+# 开发工具
+blinker==1.6.2
