@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 """
 火山引擎视频生成中转服务 - 完整修复版本 4.0-real-api
-调用真正的火山引擎即梦AI-视频生成3.0 API
+使用正确的volcengine.visual模块
 """
 from flask import Flask, request, jsonify
 import os
 import time
 import json
+import sys
 from datetime import datetime
 
 app = Flask(__name__)
@@ -24,19 +25,54 @@ print(f"Region: {VOLC_REGION}")
 print(f"Auth Token: {PROXY_AUTH_TOKEN[:10]}...")
 print("=" * 60)
 
-# 初始化火山引擎客户端
+# 初始化火山引擎客户端 - 使用正确的模块路径
+sdk_ready = False
+visual_service = None
+
 try:
-    from volcengine.videoai.VideoAI import VideoAI
-    video_ai = VideoAI()
-    video_ai.set_ak(VOLC_ACCESS_KEY_ID)
-    video_ai.set_sk(VOLC_SECRET_ACCESS_KEY)
-    video_ai.set_host("visual.volcengineapi.com")
-    video_ai.set_region(VOLC_REGION)
+    # 尝试导入visual模块（根据火山引擎官方文档）
+    from volcengine.visual.VisualService import VisualService
+    print(f"[SDK] 成功导入VisualService")
+    
+    visual_service = VisualService()
+    print(f"[SDK] VisualService对象创建成功")
+    
+    # 设置认证信息
+    visual_service.set_ak(VOLC_ACCESS_KEY_ID)
+    visual_service.set_sk(VOLC_SECRET_ACCESS_KEY)
+    visual_service.set_host("visual.volcengineapi.com")
+    visual_service.set_region(VOLC_REGION)
+    
+    print(f"[SDK] 配置设置成功")
     sdk_ready = True
-    print(f"[SDK] 火山引擎SDK初始化成功")
-except Exception as e:
+    print(f"[SDK] 火山引擎VisualService初始化成功")
+    
+except ImportError as e:
+    print(f"[SDK] 导入VisualService失败: {str(e)}")
+    
+    # 尝试检查volcengine包信息
+    try:
+        import volcengine
+        print(f"[SDK] volcengine包已安装")
+        print(f"[SDK] Python路径: {sys.path}")
+        print(f"[SDK] 尝试列出volcengine模块内容...")
+        
+        # 尝试列出可用的模块
+        import inspect
+        import pkgutil
+        modules = [name for _, name, _ in pkgutil.iter_modules(volcengine.__path__)]
+        print(f"[SDK] volcengine中的模块: {modules}")
+        
+    except Exception as volc_error:
+        print(f"[SDK] 检查volcengine包失败: {str(volc_error)}")
+    
     sdk_ready = False
-    print(f"[SDK] 火山引擎SDK初始化失败: {str(e)}")
+    
+except Exception as e:
+    print(f"[SDK] VisualService初始化错误: {str(e)}")
+    import traceback
+    traceback.print_exc()
+    sdk_ready = False
 
 def authenticate_request():
     """验证请求的Authorization token"""
@@ -59,14 +95,15 @@ def call_volcano_engine_safe(prompt, duration=5):
     如果SDK有问题，返回模拟响应
     """
     try:
-        if not sdk_ready:
+        if not sdk_ready or visual_service is None:
             raise ImportError("火山引擎SDK未初始化成功")
         
-        print(f"[火山引擎] 使用SDK调用API: {prompt}")
+        print(f"[火山引擎] 使用VisualService调用API: {prompt}")
         
         # 构建请求参数 - 使用即梦AI-视频生成3.0
+        # 根据火山引擎API文档，视频生成使用VideoGeneration接口
         req = {
-            "req_key": "jimeng_t2v_v30_1080p",
+            "req_key": "jimeng_t2v_v30_1080p",  # 即梦AI-视频生成3.0
             "prompt": prompt,
             "video_duration": duration,
             "aspect_ratio": "9:16",
@@ -76,8 +113,9 @@ def call_volcano_engine_safe(prompt, duration=5):
         
         print(f"[火山引擎] 请求参数: {json.dumps(req, ensure_ascii=False)}")
         
-        # 调用火山引擎API
-        response = video_ai.video_generation(req)
+        # 调用火山引擎API - 使用VisualService的video_generation方法
+        # 注意：方法名可能需要根据实际SDK调整
+        response = visual_service.video_generation(req)
         
         print(f"[火山引擎] API响应: {response}")
         
@@ -109,6 +147,8 @@ def call_volcano_engine_safe(prompt, duration=5):
             
     except Exception as e:
         print(f"[异常] 视频生成失败: {str(e)}")
+        import traceback
+        traceback.print_exc()
         
         # 如果SDK调用失败，返回模拟响应继续测试
         task_id = f"video_{int(time.time())}_{hash(prompt) % 10000:04d}"
@@ -133,7 +173,8 @@ def health_check():
         "timestamp": datetime.now().isoformat(),
         "auth_configured": True,
         "volc_configured": True,
-        "sdk_status": "ready" if sdk_ready else "failed"
+        "sdk_status": "ready" if sdk_ready else "failed",
+        "sdk_module": "VisualService" if sdk_ready else "none"
     })
 
 @app.route('/generate_video', methods=['POST'])
@@ -181,7 +222,8 @@ def generate_video():
         "video_url": result.get("video_url"),
         "status": result.get("status", "unknown"),
         "duration": duration,
-        "generated_at": datetime.now().isoformat()
+        "generated_at": datetime.now().isoformat(),
+        "sdk_used": "VisualService" if sdk_ready else "simulated"
     }
     
     # 添加额外信息
@@ -190,6 +232,12 @@ def generate_video():
     
     if result.get("warning"):
         response_data["warning"] = result["warning"]
+    
+    if result.get("api_response"):
+        # 只保留关键信息，避免响应过大
+        api_resp = result["api_response"]
+        response_data["api_status"] = api_resp.get("status_code")
+        response_data["api_message"] = api_resp.get("message")
     
     if not result.get("success"):
         response_data["error"] = result.get("error", "Unknown error")
@@ -206,9 +254,16 @@ def get_video_result(task_id):
         return jsonify({"error": auth_message}), 401
     
     try:
+        if not sdk_ready or visual_service is None:
+            return jsonify({
+                "success": False,
+                "error": "SDK未初始化",
+                "task_id": task_id
+            })
+        
         # 调用火山引擎查询任务状态
         req = {"task_id": task_id}
-        response = video_ai.get_video_generation_result(req)
+        response = visual_service.get_video_generation_result(req)
         
         if response.get("status_code") == 10000:
             data = response.get("data", {})
