@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-火山引擎视频生成中转服务 - 完整版本
+火山引擎视频生成中转服务 - 完整版本（硬编码配置）
 """
 
 from flask import Flask, request, jsonify
@@ -11,18 +11,13 @@ from datetime import datetime
 
 app = Flask(__name__)
 
-# 环境变量配置
-VOLC_ACCESS_KEY_ID = os.environ.get("VOLC_ACCESS_KEY_ID")
-VOLC_SECRET_ACCESS_KEY = os.environ.get("VOLC_SECRET_ACCESS_KEY")
-PROXY_AUTH_TOKEN = os.environ.get("PROXY_AUTH_TOKEN")
+# 硬编码配置（直接写入代码）
+VOLC_ACCESS_KEY_ID = "AKLTNjg4ZWUwOGNjZTVkNGRjNWFlZTY5MzU1MDI1ZWFhM2Q"
+VOLC_SECRET_ACCESS_KEY = "WmpjNVl6SXhZVGM0TjJJNE5HVTJNbUUyT1dJM01UWTROamhqTWpjd01EZw=="
+PROXY_AUTH_TOKEN = "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"
 
-# 验证环境变量
-if not VOLC_ACCESS_KEY_ID or not VOLC_SECRET_ACCESS_KEY:
-    print("WARNING: Volcano Engine credentials not set in environment variables")
-    print("Please set VOLC_ACCESS_KEY_ID and VOLC_SECRET_ACCESS_KEY")
-
-if not PROXY_AUTH_TOKEN:
-    print("WARNING: PROXY_AUTH_TOKEN not set in environment variables")
+print(f"Volcano Engine Access Key ID: {VOLC_ACCESS_KEY_ID[:10]}...")
+print(f"Auth Token configured: {bool(PROXY_AUTH_TOKEN)}")
 
 def authenticate_request():
     """验证请求的Authorization token"""
@@ -150,8 +145,10 @@ def health_check():
         "status": "running",
         "message": "Volcano Video Proxy Service is online",
         "timestamp": datetime.now().isoformat(),
-        "volc_configured": bool(VOLC_ACCESS_KEY_ID and VOLC_SECRET_ACCESS_KEY),
-        "auth_configured": bool(PROXY_AUTH_TOKEN)
+        "volc_configured": True,
+        "auth_configured": True,
+        "service": "volcano-video-proxy",
+        "version": "1.0.0"
     })
 
 # 视频生成接口
@@ -187,14 +184,6 @@ def generate_video():
         duration = 5
     
     print(f"Received video generation request: prompt='{prompt}', duration={duration}")
-    
-    # 检查火山引擎凭证
-    if not VOLC_ACCESS_KEY_ID or not VOLC_SECRET_ACCESS_KEY:
-        return jsonify({
-            "success": False,
-            "error": "Volcano Engine credentials not configured",
-            "hint": "Set VOLC_ACCESS_KEY_ID and VOLC_SECRET_ACCESS_KEY environment variables"
-        }), 500
     
     # 调用火山引擎
     result = call_volcano_engine(prompt, duration)
@@ -236,7 +225,7 @@ def internal_error(error):
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     print(f"Starting Volcano Video Proxy Service on port {port}")
-    print(f"Volcano Engine configured: {bool(VOLC_ACCESS_KEY_ID and VOLC_SECRET_ACCESS_KEY)}")
-    print(f"Auth token configured: {bool(PROXY_AUTH_TOKEN)}")
+    print(f"Volcano Engine configured: True")
+    print(f"Auth token configured: True")
     
     app.run(host="0.0.0.0", port=port, debug=False)
