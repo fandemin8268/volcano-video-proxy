@@ -10,7 +10,7 @@ VOLC_ACCESS_KEY_ID = "AKLTNjg4ZWUwOGNjZTVkNGRjNWFlZTY5MzU1MDI1ZWFhM2Q"
 VOLC_SECRET_ACCESS_KEY = "WmpjNVl6SXhZVGM0TjJJNE5HVTJNbUUyT1dJM01UWTROamhqTWpjd01EZw=="
 PROXY_AUTH_TOKEN = "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"
 
-# 初始化火山引擎服务
+# 初始化火山引擎
 try:
     visual_service = VisualService()
     visual_service.set_ak(VOLC_ACCESS_KEY_ID)
@@ -45,7 +45,7 @@ return jsonify({
     "volc_configured": True,
     "message": "火山引擎视频中转服务 - 使用VisualService模块",
     "timestamp": datetime.now().strftime("%Y/%m/%d %H:%M:%S")
-})
+    })
 
 @app.route('/generate_video', methods=['POST'])
 def generate_video():
@@ -77,7 +77,7 @@ def generate_video():
     "warning": "SDK未就绪，返回模拟响应",
     "note": "VisualService SDK初始化失败，无法调用真实API",
     "api_version": "6.0-correct-visualservice"
-})
+    })
 
     # 调用火山引擎API
     try:
@@ -87,7 +87,7 @@ def generate_video():
     "seed": -1,
     "frames": 121,
     "aspect_ratio": aspect_ratio
-}
+    }
 
     response = visual_service.common_handler("CVSync2AsyncSubmitTask", req)
 
@@ -101,7 +101,7 @@ def generate_video():
     "task_id": task_id,
     "note": "视频生成任务已提交到火山引擎",
     "api_version": "6.0-correct-visualservice"
-})
+    })
     else:
     return jsonify({
     "success": False,
