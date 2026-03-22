@@ -130,7 +130,10 @@ def query_video_status():
         if not task_id:
             return jsonify({"success": False, "error": "Missing task_id parameter"}), 400
 
-        query_req = {"task_id": task_id}
+        query_req = {
+            "req_key": "jimeng_t2v_v30_1080p",
+            "task_id": task_id
+        }
         print(f"[DEBUG] 查询任务状态: task_id={task_id}")
 
         response = visual_service.cv_sync2async_get_result(query_req)
