@@ -12,14 +12,14 @@ PROXY_AUTH_TOKEN = "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"
 
 # 初始化火山引擎服务
 try:
-visual_service = VisualService()
-visual_service.set_ak(VOLC_ACCESS_KEY_ID)
-visual_service.set_sk(VOLC_SECRET_ACCESS_KEY)
-visual_service.set_host('visual.volcengineapi.com')
-SDK_READY = True
-SDK_MODULE = "VisualService"
+    visual_service = VisualService()
+    visual_service.set_ak(VOLC_ACCESS_KEY_ID)
+    visual_service.set_sk(VOLC_SECRET_ACCESS_KEY)
+    visual_service.set_host('visual.volcengineapi.com')
+    SDK_READY = True
+    SDK_MODULE = "VisualService"
 except Exception as e:
-SDK_READY = False
+    SDK_READY = False
 SDK_MODULE = f"failed: {str(e)}"
 
 # 认证中间件
