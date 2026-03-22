@@ -77,7 +77,7 @@ def generate_video():
             "frames": 121,
             "aspect_ratio": aspect_ratio
         }
-        response = visual_service.common_handler("CVSync2AsyncSubmitTask", req)
+        response = visual_service.cv_sync2async_submit_task(req)
         if response.get('code') == 10000:
             task_id = response.get('data', {}).get('task_id', '')
             return jsonify({
