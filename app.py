@@ -68,7 +68,7 @@ return jsonify({"success": False, "error": f"Invalid request data: {str(e)}"}), 
 # 检查SDK状态
 if not SDK_READY:
 return jsonify({
-"success": True, # 仍然返回success以保持工作流
+"success": True,
 "status": "simulated",
 "sdk_used": "simulated",
 "prompt": prompt,
@@ -89,10 +89,9 @@ req = {
 "aspect_ratio": aspect_ratio
 }
 
-# 使用common_handler调用视频生成API
 response = visual_service.common_handler("CVSync2AsyncSubmitTask", req)
 
-if response.get('code') == 10000: # 火山引擎成功代码
+if response.get('code') == 10000:
 task_id = response.get('data', {}).get('task_id', '')
 return jsonify({
 "success": True,
