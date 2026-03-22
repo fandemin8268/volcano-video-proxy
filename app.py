@@ -75,7 +75,8 @@ return jsonify({
 "task_id": f"video_simulated_{int(datetime.now().timestamp())}",
 "video_url": f"https://volcano-video-storage.volcengineapi.com/videos/simulated_{int(datetime.now().timestamp())}.mp4",
 "warning": "SDK未就绪，返回模拟响应",
-"note": "VisualService SDK初始化失败，无法调用真实API"
+"note": "VisualService SDK初始化失败，无法调用真实API",
+"api_version": "6.0-correct-visualservice"
 })
 
 # 调用火山引擎API
